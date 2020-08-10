@@ -12,7 +12,7 @@ phases:
     commands:
       - echo Build started on $(date)
       - unset MAVEN_CONFIG
-      - ./mvnw -ntp package -DskipTests
+      - mvn -ntp package -DskipTests
       - docker build -t $docker_img_name:$docker_tag .
       - docker tag $docker_img_name:$docker_tag $ecr_repo:latest
       - docker push $ecr_repo:latest
