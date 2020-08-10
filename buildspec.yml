@@ -1,0 +1,20 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto8
+  pre_build:
+    commands:
+      - echo login ERC
+      - "$(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)"
+  build:
+    commands:
+      - echo Build started on $(date)
+      - /.mvnw -ntp package -DskipTests
+      - docker build -t $docker_img_name:$docker_tag .
+      - docker tag $docker_img_name:$docker_tag $ecr_repo:latest
+      - docker push $ecr_repo:latest
+  post_build:
+    commands:
+      - echo Build completed on $(date)
