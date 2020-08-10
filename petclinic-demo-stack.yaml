@@ -13,7 +13,7 @@ Resources:
     Properties:
       RepositoryDescription: CodeCommit Repo for PetClinic CICD Pipeline
       RepositoryName: petclinic-code-repo
-  CodeBuildServiceRole:
+  PetClinicCodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
       ManagedPolicyArns:
@@ -62,7 +62,7 @@ Resources:
             Principal: { Service: codebuild.amazonaws.com }
             Action:
               - sts:AssumeRole
-  CodePipelineServiceRole:
+  PetClinicCodePipelineServiceRole:
     Type: AWS::IAM::Role
     Properties:
       Policies:
@@ -118,7 +118,7 @@ Resources:
     Properties:
       Artifacts:
         Type: CODEPIPELINE
-      Description: For Security Hub PetClinic Vuln Scanning Blog
+      Description: PetClinic build
       Environment:
         ComputeType: BUILD_GENERAL1_LARGE
         Image: aws/codebuild/standard:3.0
@@ -135,7 +135,7 @@ Resources:
         CloudWatchLogs:
           Status: ENABLED
       Name: !Sub 'petclinic-build-project-${AWS::AccountId}'
-      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+      ServiceRole: !GetAtt PetClinicCodeBuildServiceRole.Arn
       Source:
         Type: CODEPIPELINE
   PetClinicCodePipeline:
@@ -146,7 +146,7 @@ Resources:
         Type: S3
       Name: !Sub 'petclinic-scan-cicd-pipeline-${AWS::AccountId}'
       RestartExecutionOnUpdate: True
-      RoleArn: !GetAtt CodePipelineServiceRole.Arn
+      RoleArn: !GetAtt PetClinicCodePipelineServiceRole.Arn
       Stages:
         -
           Name: Source
@@ -160,7 +160,7 @@ Resources:
                 Provider: CodeCommit
               Configuration:
                 RepositoryName: !GetAtt PetClinicCodeCommit.Name
-                BranchName: master
+                BranchName: main
               OutputArtifacts:
                 -
                   Name: SourceOutput
