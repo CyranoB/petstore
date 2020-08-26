@@ -1,32 +1,32 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: For PetClinic container CI/CD demo
+Description: For AWSome PetClinic container CI/CD demo
 Parameters:
-  PetClinicContainerName:
+  AWSomePetClinicContainerName:
     Type: String
-    Default: petclinic-test
+    Default: awsome-petclinic-test
     Description: Container name to be populated by CodeBuild
 Resources:
-  PetClinicECR:
+  AWSomePetClinicECR:
     Type: AWS::ECR::Repository
-  PetClinicCodeCommit:
+  AWSomePetClinicCodeCommit:
     Type: AWS::CodeCommit::Repository
     Properties:
-      RepositoryDescription: CodeCommit Repo for PetClinic CICD Pipeline
+      RepositoryDescription: CodeCommit Repo for AWSome PetClinic CICD Pipeline
       RepositoryName: petclinic-code-repo
-  PetClinicCodeBuildServiceRole:
+  AWSomePetClinicCodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser
       Policies:
-        - PolicyName: PetClinicCodeBuildServiceRolePolicy
+        - PolicyName: AWSomePetClinicCodeBuildServiceRolePolicy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
                   - codecommit:GitPull
-                Resource: !GetAtt PetClinicCodeCommit.Arn
+                Resource: !GetAtt AWSomePetClinicCodeCommit.Arn
               - Effect: Allow
                 Action:
                   - logs:CreateLogGroup
@@ -54,7 +54,7 @@ Resources:
                   - ecr:InitiateLayerUpload
                   - ecr:UploadLayerPart
                   - ecr:CompleteLayerUpload
-                Resource: !GetAtt PetClinicECR.Arn
+                Resource: !GetAtt AWSomePetClinicECR.Arn
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -62,11 +62,11 @@ Resources:
             Principal: { Service: codebuild.amazonaws.com }
             Action:
               - sts:AssumeRole
-  PetClinicCodePipelineServiceRole:
+  AWSomePetClinicCodePipelineServiceRole:
     Type: AWS::IAM::Role
     Properties:
       Policies:
-        - PolicyName: PetClinicCodePipelineServiceRolePolicy
+        - PolicyName: AWSomePetClinicCodePipelineServiceRolePolicy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -77,7 +77,7 @@ Resources:
                   - codecommit:GetCommit
                   - codecommit:GetUploadArchiveStatus
                   - codecommit:UploadArchive
-                Resource: !GetAtt PetClinicCodeCommit.Arn
+                Resource: !GetAtt AWSomePetClinicCodeCommit.Arn
               - Effect: Allow
                 Action:
                   - cloudwatch:*
@@ -90,7 +90,7 @@ Resources:
                 Action:
                   - codebuild:BatchGetBuilds
                   - codebuild:StartBuild
-                Resource: !GetAtt PetClinicCodeBuild.Arn
+                Resource: !GetAtt AWSomePetClinicCodeBuild.Arn
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -98,10 +98,10 @@ Resources:
             Principal: { Service: codepipeline.amazonaws.com }
             Action:
               - sts:AssumeRole
-  PetClinicCodePipelineArtifactBucket:
+  AWSomePetClinicCodePipelineArtifactBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 'petclinic-codepipeline-artifacts-${AWS::AccountId}'
+      BucketName: !Sub 'awsome-petclinic-codepipeline-artifacts-${AWS::AccountId}'
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -113,12 +113,12 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
-  PetClinicCodeBuild:
+  AWSomePetClinicCodeBuild:
     Type: AWS::CodeBuild::Project
     Properties:
       Artifacts:
         Type: CODEPIPELINE
-      Description: PetClinic build
+      Description: AWSome PetClinic build
       Environment:
         ComputeType: BUILD_GENERAL1_LARGE
         Image: aws/codebuild/standard:3.0
@@ -126,27 +126,27 @@ Resources:
         Type: LINUX_CONTAINER
         EnvironmentVariables:
           - Name: docker_img_name
-            Value: !Ref PetClinicContainerName
+            Value: !Ref AWSomePetClinicContainerName
           - Name: docker_tag
             Value: latest
           - Name: ecr_repo
-            Value: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${PetClinicECR}'
+            Value: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${AWSomePetClinicECR}'
       LogsConfig:
         CloudWatchLogs:
           Status: ENABLED
-      Name: !Sub 'petclinic-build-project-${AWS::AccountId}'
-      ServiceRole: !GetAtt PetClinicCodeBuildServiceRole.Arn
+      Name: !Sub 'awsome-petclinic-build-project-${AWS::AccountId}'
+      ServiceRole: !GetAtt AWSomePetClinicCodeBuildServiceRole.Arn
       Source:
         Type: CODEPIPELINE
-  PetClinicCodePipeline:
+  AWSomePetClinicCodePipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
       ArtifactStore:
-        Location: !Ref PetClinicCodePipelineArtifactBucket
+        Location: !Ref AWSomePetClinicCodePipelineArtifactBucket
         Type: S3
-      Name: !Sub 'petclinic-scan-cicd-pipeline-${AWS::AccountId}'
+      Name: !Sub 'awsome-petclinic-scan-cicd-pipeline-${AWS::AccountId}'
       RestartExecutionOnUpdate: True
-      RoleArn: !GetAtt PetClinicCodePipelineServiceRole.Arn
+      RoleArn: !GetAtt AWSomePetClinicCodePipelineServiceRole.Arn
       Stages:
         -
           Name: Source
@@ -159,7 +159,7 @@ Resources:
                 Version: 1
                 Provider: CodeCommit
               Configuration:
-                RepositoryName: !GetAtt PetClinicCodeCommit.Name
+                RepositoryName: !GetAtt AWSomePetClinicCodeCommit.Name
                 BranchName: main
               OutputArtifacts:
                 -
@@ -179,6 +179,6 @@ Resources:
                 Version: 1
                 Provider: CodeBuild
               Configuration:
-                ProjectName: !Ref PetClinicCodeBuild
+                ProjectName: !Ref AWSomePetClinicCodeBuild
                 PrimarySource: SourceOutput
               RunOrder: 1
