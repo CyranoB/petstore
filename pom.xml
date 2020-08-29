@@ -32,8 +32,8 @@
     <spring-format.version>0.0.22</spring-format.version>
 
 
-    <sonar.projectKey>CyranoB_petstore</sonar.projectKey>
-    <sonar.organization>cyranob</sonar.organization>
+    <sonar.projectKey>EddieDemoOrg_petstore</sonar.projectKey>
+    <sonar.organization>eddiedemoorg</sonar.organization>
     <sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
   </properties>
