@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * @author Juergen Hoeller
@@ -54,5 +55,15 @@ class VetController {
 		vets.getVetList().addAll(this.vets.findAll());
 		return vets;
 	}
+
+	private <T> Supplier<T> abort(Class<T> exception) {
+		return () -> {
+		  try {
+			return exception.newInstance();
+		  } catch (InstantiationException | IllegalAccessException e) {
+			throw new RuntimeException(e);
+		  }
+		};
+	  }
 
 }
