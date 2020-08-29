@@ -55,4 +55,13 @@ class VetController {
 		return vets;
 	}
 
+
+	public static boolean returnTrue(boolean b) {
+		if (b){
+			return true;
+		} else {
+			return true;
+		}
+	}
+
 }
