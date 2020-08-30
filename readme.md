@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a9ecbaf3150b42439425a265b94ed184)](https://app.codacy.com/gh/EddieDemoOrg/petstore?utm_source=github.com&utm_medium=referral&utm_content=EddieDemoOrg/petstore&utm_campaign=Badge_Grade_Settings)
 # Spring PetClinic Sample Application [![Build Status](https://travis-ci.org/spring-projects/spring-petclinic.png?branch=main)](https://travis-ci.org/spring-projects/spring-petclinic/)
 
 ## Understanding the Spring Petclinic application with a few diagrams
