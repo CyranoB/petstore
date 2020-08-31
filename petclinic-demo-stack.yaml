@@ -5,7 +5,7 @@ Parameters:
     Type: String
     Default: awsome-petclinic-test
     Description: Container name to be populated by CodeBuild
-Resources:
+Resources:    
   AWSomePetClinicECR:
     Type: AWS::ECR::Repository
   AWSomePetClinicCodeCommit:
@@ -55,6 +55,9 @@ Resources:
                   - ecr:UploadLayerPart
                   - ecr:CompleteLayerUpload
                 Resource: !GetAtt AWSomePetClinicECR.Arn
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameters
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
