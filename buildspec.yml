@@ -19,7 +19,7 @@ phases:
       - echo Build started on ${date}
       - unset MAVEN_CONFIG
       - ./mvnw -ntp -B package -DskipTests
-      - ./mvnw -ntp -B -D sonar.projectKey=$SONAR_KEY -D sonar.organization=$SONAR_KEY -Dsonar.host.url=SONAR_URL verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+      - ./mvnw -ntp -B -D sonar.projectKey=$SONAR_KEY -D sonar.organization=$SONAR_KEY -Dsonar.host.url=$SONAR_URL verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
       - docker build -t $docker_img_name:$docker_tag .
       - docker tag $docker_img_name:$docker_tag $ecr_repo:latest
       - docker push $ecr_repo:latest
