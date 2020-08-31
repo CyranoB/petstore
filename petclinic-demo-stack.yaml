@@ -58,7 +58,8 @@ Resources:
               - Effect: Allow
                 Action:
                   - ssm:GetParameters
-                Resource: "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameters:/petstore/*"
+                Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/petstore/*"
+
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
