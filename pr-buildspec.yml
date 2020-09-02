@@ -1,0 +1,29 @@
+version: 0.2
+env:
+  parameter-store:
+    SONAR_URL: "/petstore/dev/sonar/host"
+    SONAR_ORG: "/petstore/dev/sonar/organization"
+    SONAR_KEY: "/petstore/dev/sonar/projectKey"
+    SONAR_TOKEN: "/petstore/dev/sonar/token"
+phases:
+  install:
+    runtime-versions:
+      java: corretto8
+  pre_build:
+    commands:
+      - export SONAR_TOKEN=$SONAR_TOKEN
+      - git checkout $SOURCE_COMMIT
+  build:
+    commands:
+      - echo Verifying Pull Request $PULL_REQUEST_ID started on $date
+      - unset MAVEN_CONFIG
+      - echo sonar.pullrequest.key $PULL_REQUEST_ID 
+      - echo sonar.pullrequest.branch $SOURCE_REFERENCE
+      - echo 
+      - echo sonar.projectKey $SONAR_KEY 
+      - echo sonar.organization $SONAR_ORG 
+      - echo sonar.host.url $SONAR_URL 
+      - echo 
+  post_build:
+    commands:
+      - echo Done
