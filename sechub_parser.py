@@ -66,6 +66,7 @@ with open('results.json') as json_file:
             else:
                 print('No vulnerability information found')
             try:
+                #Send findinfs to Security Hub
                 response = securityhub.batch_import_findings(
                     Findings=[
                         {
