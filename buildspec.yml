@@ -16,13 +16,17 @@ phases:
       - "$(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)"
   build:
     commands:
-      - echo Build started on ${date}
+      - echo Build started on `date`
       - unset MAVEN_CONFIG
       - ./mvnw -ntp -B package 
       - ./mvnw -ntp -B -D skipTests -D sonar.projectKey=$sq_prj -Dsonar.host.url=$sq_url -D spring.main.banner-mode=off verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
       - docker build -t $docker_img_name:$docker_tag .
+      - trivy -f json -o results.json --exit-code 0 --severity HIGH,MEDIUM,LOW --quiet --auto-refresh $docker_img_name:$docker_tag
+      - trivy -f json -o results.json --exit-code 1 --severity HIGH,CRITICAL --quiet --auto-refresh $docker_img_name:$docker_tag      
       - docker tag $docker_img_name:$docker_tag $ecr_repo:latest
       - docker push $ecr_repo:latest
   post_build:
     commands:
-      - echo Build completed on ${date}
+      - echo Pushing Trivy findings to Security Hub
+      - python3 sechub_parser.py
+      - echo Build completed on `date`
