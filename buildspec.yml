@@ -21,7 +21,7 @@ phases:
     commands:
       - echo Build started on `date`
       - unset MAVEN_CONFIG
-      - ./mvnw -ntp -B package 
+      - ./mvnw -ntp -B -Dcheckstyle.skip package 
       - java -jar $SCANNER -D sonar.projectKey=$sq_prj -Dsonar.host.url=$sq_url -Dsonar.java.binaries=target/classes
       - docker build -t $docker_img_name:$docker_tag .
       - trivy -f json -o results.json --exit-code 0 --severity CRITICAL,HIGH,MEDIUM,LOW --quiet $docker_img_name:$docker_tag
