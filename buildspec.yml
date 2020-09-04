@@ -1,21 +1,33 @@
 version: 0.2
-
+env:
+  parameter-store:
+    SONAR_TOKEN: "/petstore/dev/sonar/token"
 phases:
   install:
     runtime-versions:
-      java: openjdk8
+      java: corretto8
   pre_build:
     commands:
+      - export SONAR_TOKEN=$SONAR_TOKEN
+      - export sq_prj="awsomepetclinic"
+      - export sq_url="http://ec2-3-81-189-216.compute-1.amazonaws.com:9000"
+      - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/master/contrib/install.sh | sh -s -- -b /usr/local/bin      
       - echo login ERC
       - "$(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)"
   build:
     commands:
-      - echo Build started on ${date}
+      - echo Build started on `date`
       - unset MAVEN_CONFIG
-      - ./mvnw -ntp package -DskipTests
+      - ./mvnw -ntp -B package 
+      - ./mvnw -ntp -B -D skipTests -D sonar.projectKey=$sq_prj -Dsonar.host.url=$sq_url -D spring.main.banner-mode=off verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
       - docker build -t $docker_img_name:$docker_tag .
+      - trivy -f json -o results.json --exit-code 0 --severity CRITICAL,HIGH,MEDIUM,LOW --quiet $docker_img_name:$docker_tag
+      - trivy --exit-code 1 --severity HIGH,CRITICAL --quiet $docker_img_name:$docker_tag      
       - docker tag $docker_img_name:$docker_tag $ecr_repo:latest
       - docker push $ecr_repo:latest
   post_build:
     commands:
-      - echo Build completed on ${date}
+      - echo Pushing Trivy findings to Security Hub
+      - cat results.json
+      - python3 sechub_parser.py
+      - echo Build completed on `date`

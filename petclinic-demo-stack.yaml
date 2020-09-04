@@ -5,7 +5,7 @@ Parameters:
     Type: String
     Default: awsome-petclinic-test
     Description: Container name to be populated by CodeBuild
-Resources:
+Resources:    
   AWSomePetClinicECR:
     Type: AWS::ECR::Repository
   AWSomePetClinicCodeCommit:
@@ -26,6 +26,8 @@ Resources:
               - Effect: Allow
                 Action:
                   - codecommit:GitPull
+                  - codecommit:PostCommentForPullRequest
+                  - codecommit:UpdatePullRequestApprovalSstate
                 Resource: !GetAtt AWSomePetClinicCodeCommit.Arn
               - Effect: Allow
                 Action:
@@ -55,6 +57,11 @@ Resources:
                   - ecr:UploadLayerPart
                   - ecr:CompleteLayerUpload
                 Resource: !GetAtt AWSomePetClinicECR.Arn
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameters
+                Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/petstore/*"
+
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -113,6 +120,36 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
+
+  AWSomePetClinicPullRequestCodeBuild:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Description: AWSome PetClinic Pull Request build
+      Environment:
+        ComputeType: BUILD_GENERAL1_LARGE
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+        PrivilegedMode: True
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: docker_img_name
+            Value: !Ref AWSomePetClinicContainerName
+          - Name: docker_tag
+            Value: latest
+          - Name: ecr_repo
+            Value: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${AWSomePetClinicECR}'
+      LogsConfig:
+        CloudWatchLogs:
+          Status: ENABLED
+      Name: !Sub 'awsome-petclinic-pr-project-${AWS::AccountId}'
+      ServiceRole: !GetAtt AWSomePetClinicCodeBuildServiceRole.Arn
+      Source:
+        Type: CODECOMMIT
+        Location: !GetAtt AWSomePetClinicCodeCommit.CloneUrlHttp
+        BuildSpec: pr-buildspec.yml
+
+
   AWSomePetClinicCodeBuild:
     Type: AWS::CodeBuild::Project
     Properties:
@@ -121,7 +158,7 @@ Resources:
       Description: AWSome PetClinic build
       Environment:
         ComputeType: BUILD_GENERAL1_LARGE
-        Image: aws/codebuild/standard:3.0
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
         PrivilegedMode: True
         Type: LINUX_CONTAINER
         EnvironmentVariables:
@@ -138,6 +175,7 @@ Resources:
       ServiceRole: !GetAtt AWSomePetClinicCodeBuildServiceRole.Arn
       Source:
         Type: CODEPIPELINE
+
   AWSomePetClinicCodePipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
@@ -160,7 +198,7 @@ Resources:
                 Provider: CodeCommit
               Configuration:
                 RepositoryName: !GetAtt AWSomePetClinicCodeCommit.Name
-                BranchName: main
+                BranchName: master
               OutputArtifacts:
                 -
                   Name: SourceOutput
@@ -182,3 +220,100 @@ Resources:
                 ProjectName: !Ref AWSomePetClinicCodeBuild
                 PrimarySource: SourceOutput
               RunOrder: 1
+
+
+  AWSomePetStoreCloudWatchEventsCodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - events.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: events-invoke-codebuild
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Resource: !GetAtt AWSomePetClinicCodeBuild.Arn
+                Action: 
+                  - codebuild:StartBuild
+
+
+  AWSomePetStorePullRequestTriggerCodeBuildRule:
+    Type: AWS::Events::Rule
+    Properties: 
+      Description: 'Rule to trigger build from CodeCommit pull request'
+      EventPattern:
+        source:
+          - aws.codecommit
+        detail-type:
+          - 'CodeCommit Pull Request State Change'
+        detail:
+          event:
+            - pullRequestCreated
+            - pullRequestSourceBranchUpdated
+        resources:
+          - !GetAtt AWSomePetClinicCodeCommit.Arn
+      State: ENABLED
+      Targets: 
+        - Arn: !GetAtt AWSomePetClinicPullRequestCodeBuild.Arn
+          Id: codebuild
+          RoleArn: !GetAtt AWSomePetStoreCloudWatchEventsCodeBuildRole.Arn
+          InputTransformer:
+            InputTemplate: |
+              {
+                "sourceVersion": <sourceVersion>,
+                "artifactsOverride": {"type": "NO_ARTIFACTS"},
+                "environmentVariablesOverride": [
+                   {
+                       "name": "PULL_REQUEST_ID",
+                       "value": <pullRequestId>,
+                       "type": "PLAINTEXT"
+                   },
+                   {
+                       "name": "REPOSITORY_NAME",
+                       "value": <repositoryName>,
+                       "type": "PLAINTEXT"
+                   },
+                   {
+                       "name": "SOURCE_COMMIT",
+                       "value": <sourceCommit>,
+                       "type": "PLAINTEXT"
+                   },
+                  {
+                       "name": "SOURCE_REFERENCE",
+                       "value": <sourceReference>,
+                       "type": "PLAINTEXT"
+                   },
+                  {
+                       "name": "DESTINATION_REFERENCE",
+                       "value": <destinationReference>,
+                       "type": "PLAINTEXT"
+                   },                   
+                   {
+                       "name": "DESTINATION_COMMIT",
+                       "value": <destinationCommit>,
+                       "type": "PLAINTEXT"
+                   },
+                   {
+                      "name" : "REVISION_ID",
+                      "value": <revisionId>,
+                      "type": "PLAINTEXT"
+                   }
+                ]
+              }
+            InputPathsMap:
+              sourceVersion: "$.detail.sourceCommit"
+              pullRequestId: "$.detail.pullRequestId"
+              repositoryName: "$.detail.repositoryNames[0]"
+              sourceCommit: "$.detail.sourceCommit"
+              sourceReference: "$.detail.sourceReference"
+              destinationReference: "$.detail.destinationReference"
+              destinationCommit: "$.detail.destinationCommit"
+              revisionId: "$.detail.revisionId"

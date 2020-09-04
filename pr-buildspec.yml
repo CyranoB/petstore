@@ -1,0 +1,38 @@
+version: 0.2
+env:
+  parameter-store:
+    SONAR_TOKEN: "/petstore/dev/sonar/token"
+phases:
+  install:
+    runtime-versions:
+      java: corretto8
+  pre_build:
+    commands:
+      - export SONAR_TOKEN=$SONAR_TOKEN
+      - export sq_prj="awsomepetclinic"
+      - export sq_url="http://ec2-3-81-189-216.compute-1.amazonaws.com:9000"
+      - export pr_key="$PULL_REQUEST_ID"
+      - export pr_branch=$(echo $SOURCE_REFERENCE | grep -o '[^/]*$')
+      - export pr_base=$(echo $DESTINATION_REFERENCE | grep -o '[^/]*$')
+      #- echo pr_key = $pr_key
+      #- echo pr_branch = $pr_branch
+      - git checkout $BRANCH
+  build:
+    commands:
+      - echo Verifying Pull Request $PULL_REQUEST_ID started on `date`
+      - unset MAVEN_CONFIG
+      # ./mvnw -Dcheckstyle.skip -DskipTests -B -ntp -Dspring.main.banner-mode=off -Dsonar.projectKey=4 -Dsonar.host.url=$sq_url -Dsonar.pullrequest.key=$pr_key -Dsonar.pullrequest.branch=$pr_branch -Dsonar.pullrequest.base=$sq_base -Dsonar.qualitygate.wait=true verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar > mvn.log
+      - ./mvnw -Dcheckstyle.skip -DskipTests -B -ntp -Dspring.main.banner-mode=off -Dsonar.projectKey=awsomepetclinic -Dsonar.host.url=$sq_url -Dsonar.pullrequest.key=4 -Dsonar.pullrequest.branch=sq-pr-approver -Dsonar.pullrequest.base=master -Dsonar.qualitygate.wait=true verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar > mvn.log
+  post_build:
+    commands:
+      - cat mvn.log
+      - export quality_status=$(cat mvn.log | egrep -o "QUALITY GATE STATUS\W [A-Z]+" | grep -o '[^ ]*$')
+      - export sq_link=$(cat mvn.log | grep -oP "View details on \S+")
+      - |
+        if [ $quality_status = "FAILED" ]; then
+          content=$(echo "SonarQube Quality Gate Failed. $sq_link");
+        else
+          content=$(echo "SonarQube Quality Gate Passed. $sq_link");
+          aws codecommit update-pull-request-approval-state --pull-request-id $PULL_REQUEST_ID --approval-state APPROVE --revision-id $REVISION_ID;
+        fi
+      - aws codecommit post-comment-for-pull-request --pull-request-id $PULL_REQUEST_ID --repository-name $REPOSITORY_NAME --before-commit-id $DESTINATION_COMMIT --after-commit-id $SOURCE_COMMIT --content "$content"    
