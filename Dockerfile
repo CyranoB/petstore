@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-alpine
+FROM amazoncorretto:8-alpine-jre
 
 COPY target/spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar /petclinic.jar
 
