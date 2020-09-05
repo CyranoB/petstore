@@ -28,8 +28,8 @@ phases:
   post_build:
     commands:
       - cat sonar.log
-      - export quality_status=$(cat sonar.log | egrep -o "QUALITY GATE STATUS\W [A-Z]+" | grep -o '[^ ]*$')
-      - export sq_link=$(cat sonar.log | grep -oP "View details on \S+")
+      - export quality_status=$(cat sonar.log | grep "QUALITY GATE STATUS" | sed -E 's/.+STATUS\W ([A-Z]+).+/\1/g')
+      - export sq_link=$($(cat sonar.log | grep "QUALITY GATE STATUS")
       - |
         if [ $quality_status = "FAILED" ]; then
           content=$(echo "SonarQube Quality Gate Failed. $sq_link");
@@ -38,8 +38,3 @@ phases:
           aws codecommit update-pull-request-approval-state --pull-request-id $PULL_REQUEST_ID --approval-state APPROVE --revision-id $REVISION_ID;
         fi
       - aws codecommit post-comment-for-pull-request --pull-request-id $PULL_REQUEST_ID --repository-name $REPOSITORY_NAME --before-commit-id $DESTINATION_COMMIT --after-commit-id $SOURCE_COMMIT --content "$content"    
-reports:
-  jacoco-report:
-    files:
-      - 'site/jacoco/jacoco.xml'
-    file-format: 'JaCoCoXml'
