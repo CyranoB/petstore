@@ -30,6 +30,9 @@ Resources:
                   - codecommit:UpdatePullRequestApprovalSstate
                 Resource: !GetAtt AWSomePetClinicCodeCommit.Arn
               - Effect: Allow
+                  - codebuild:CreateReportGroup
+                Resource: !GetAtt AWSomePetClinicCodeBuild.Arn
+              - Effect: Allow
                 Action:
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
@@ -97,6 +100,7 @@ Resources:
                 Action:
                   - codebuild:BatchGetBuilds
                   - codebuild:StartBuild
+                  - codebuild:CreateReportGroup
                 Resource: !GetAtt AWSomePetClinicCodeBuild.Arn
       AssumeRolePolicyDocument:
         Version: 2012-10-17
