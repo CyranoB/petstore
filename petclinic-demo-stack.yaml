@@ -31,6 +31,14 @@ Resources:
                 Resource: !GetAtt AWSomePetClinicCodeCommit.Arn
               - Effect: Allow
                 Action:
+                  - codebuild:CreateReportGroup
+                  - codebuild:CreateReport
+                  - codebuild:UpdateReport
+                  - codebuild:BatchPutTestCases
+                  - codebuild:BatchPutCodeCoverages
+                Resources: '*'
+              - Effect: Allow
+                Action:
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:PutLogEvents
@@ -97,12 +105,7 @@ Resources:
                 Action:
                   - codebuild:BatchGetBuilds
                   - codebuild:StartBuild
-                  - codebuild:CreateReportGroup
-                  - codebuild:CreateReport
-                  - codebuild:UpdateReport
-                  - codebuild:BatchPutTestCases
-                  - codebuild:BatchPutCodeCoverages
-                Resource: '*'
+                Resource: !GetAtt AWSomePetClinicCodeBuild.Arn
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
