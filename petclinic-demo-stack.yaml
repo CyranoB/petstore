@@ -31,14 +31,6 @@ Resources:
                 Resource: !GetAtt AWSomePetClinicCodeCommit.Arn
               - Effect: Allow
                 Action:
-                  - codebuild:CreateReportGroup
-                  - codebuild:CreateReport
-                  - codebuild:UpdateReport
-                  - codebuild:BatchPutTestCases
-                  - codebuild:BatchPutCodeCoverages
-                Resources: '*'
-              - Effect: Allow
-                Action:
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:PutLogEvents
@@ -69,7 +61,20 @@ Resources:
                 Action:
                   - ssm:GetParameters
                 Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/petstore/*"
-
+        - PolicyName: TestPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - codebuild:CreateReportGroup
+                  - codebuild:CreateReport
+                  - codebuild:UpdateReport
+                  - codebuild:BatchPutTestCases
+                  - codebuild:BatchPutCodeCoverages
+                Resource: 
+                  - !GetAtt AWSomePetClinicCoverageReportGroup.Arn
+                  - !GetAtt AWSomePetClinicDependencyCheckReportGroup.Arn
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -77,6 +82,7 @@ Resources:
             Principal: { Service: codebuild.amazonaws.com }
             Action:
               - sts:AssumeRole
+  
   AWSomePetClinicCodePipelineServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -202,7 +208,7 @@ Resources:
               ActionTypeId:
                 Category: Source
                 Owner: AWS
-                Version: 1
+                Version: '1'
                 Provider: CodeCommit
               Configuration:
                 RepositoryName: !GetAtt AWSomePetClinicCodeCommit.Name
@@ -222,13 +228,28 @@ Resources:
               ActionTypeId:
                 Category: Build
                 Owner: AWS
-                Version: 1
+                Version: '1'
                 Provider: CodeBuild
               Configuration:
                 ProjectName: !Ref AWSomePetClinicCodeBuild
                 PrimarySource: SourceOutput
               RunOrder: 1
+  
+  AWSomePetClinicCoverageReportGroup:
+    Type: AWS::CodeBuild::ReportGroup
+    Properties:
+      Name: awsomepetclinic-coverage-report
+      Type: CODE_COVERAGE
+      ExportConfig:
+        ExportConfigType: NO_EXPORT      
 
+  AWSomePetClinicDependencyCheckReportGroup:
+    Type: AWS::CodeBuild::ReportGroup
+    Properties:
+      Name: awsomepetclinic-dependencycheck-report
+      Type: TEST
+      ExportConfig:
+        ExportConfigType: NO_EXPORT
 
   AWSomePetStoreCloudWatchEventsCodeBuildRole:
     Type: AWS::IAM::Role

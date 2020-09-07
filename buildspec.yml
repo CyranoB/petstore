@@ -35,11 +35,11 @@ phases:
       - python3 sechub_parser.py
       - echo Build completed on `date`
 reports:
-  jacoco-report:
+  awsomepetclinic-coverage-report:
     files:
       - 'target/site/jacoco/jacoco.xml'
     file-format: 'JaCoCoXml'
-  dependency-chek-report:
+  awsomepetclinic-dependencycheck-report:
     files:
       - 'target/dependency-check-junit.xml'
     file-format: 'JunitXml'
