@@ -28,7 +28,7 @@ phases:
       - ./mvnw -ntp -B -Dcheckstyle.skip -Dspring.main.banner-mode=off -Dformat=JUNIT package org.owasp:dependency-check-maven:check
       - java -jar $SCANNER -D sonar.projectKey=$sq_prj -Dsonar.host.url=$sq_url -Dsonar.java.binaries=target/classes
       - docker build -t $docker_img_name:$docker_tag .
-      - trivy -f json -o findings.jsin --exit-code 0 --severity CRITICAL,HIGH,MEDIUM --quiet $docker_img_name:$docker_tag
+      - trivy -f json -o findings.json --exit-code 0 --severity CRITICAL,HIGH,MEDIUM --quiet $docker_img_name:$docker_tag
       - trivy -f template --template "@src/trivy/junit.tpl" -o findings.xml --exit-code 0 --severity CRITICAL,HIGH,MEDIUM --quiet $docker_img_name:$docker_tag
       - trivy --exit-code 1 --severity HIGH,CRITICAL --quiet $docker_img_name:$docker_tag      
       - docker tag $docker_img_name:$docker_tag $ecr_repo:latest
