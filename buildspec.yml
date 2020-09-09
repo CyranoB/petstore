@@ -29,14 +29,14 @@ phases:
       - java -jar $SCANNER -D sonar.projectKey=$sq_prj -Dsonar.host.url=$sq_url -Dsonar.java.binaries=target/classes
       - docker build -t $docker_img_name:$docker_tag .
       - trivy -f template --template "@src/trivy/asff.tpl" -o findings.asff --exit-code 0 --severity CRITICAL,HIGH,MEDIUM --quiet $docker_img_name:$docker_tag
+      - trivy -f template --template "@src/trivy/junit.tpl" -o findings.xml --exit-code 0 --severity CRITICAL,HIGH,MEDIUM --quiet $docker_img_name:$docker_tag
       - trivy --exit-code 1 --severity HIGH,CRITICAL --quiet $docker_img_name:$docker_tag      
       - docker tag $docker_img_name:$docker_tag $ecr_repo:latest
       - docker push $ecr_repo:latest
   post_build:
     commands:
       - echo Pushing Trivy findings to Security Hub
-      - cat findings.asff
-      - aws securityhub batch-import-findings --findings $(cat findings.asff)
+      - aws securityhub batch-import-findings --findings `cat findings.asff`
       - echo Build completed on `date`
 reports:
   awsomepetclinic-coverage-report:
@@ -47,3 +47,8 @@ reports:
     files:
       - 'target/dependency-check-junit.xml'
     file-format: 'JunitXml'
+  awsomepetclinic-trivy-report:
+    files:
+      - 'findings.xml'
+    file-format: 'JunitXml'
+
