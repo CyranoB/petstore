@@ -28,7 +28,7 @@ Resources:
                   - codecommit:GitPull
                   - codecommit:PostCommentForPullRequest
                   - codecommit:UpdatePullRequestApprovalState
-                Resources: !GetAtt AWSomePetClinicCodeCommit.Arn
+                Resource: !GetAtt AWSomePetClinicCodeCommit.Arn
               - Effect: Allow
                 Action:
                   - logs:CreateLogGroup
