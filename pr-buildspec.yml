@@ -42,7 +42,7 @@ phases:
       - cat sonar.log
       - export quality_status=$(cat sonar.log | grep "QUALITY GATE STATUS" | cut -d' ' -f5)
       - echo $quality_status
-      - export sq_link=$(cat sonar.log | grep "QUALITY GATE STATUS")
+      - export sq_link=$(cat sonar.log | grep "QUALITY GATE STATUS" | cut -d' ' -f10)
       - echo $sq_link
       - |
         if [ $quality_status = "FAILED" ]; then
