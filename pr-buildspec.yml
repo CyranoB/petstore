@@ -22,9 +22,9 @@ phases:
       - git checkout $BRANCH
   build:
     commands:
-      - echo Verifying Pull Request $PULL_REQUEST_ID started on `date`
+      - echo Verifying Pull Request $PULL_REQUEST_ID $pr_branch to be merge to $pr_base
       - unset MAVEN_CONFIG
-      - trufflehog --max_depth 10 --branch $BRANCH  --regex  --entropy=False --repo_path=. --json XXX | jq -r '"File \(.path) contains \(.reason)"' > truffles
+      - trufflehog --max_depth 10 --branch $pr_branch  --regex  --entropy=False --repo_path=. --json XXX | jq -r '"File \(.path) contains \(.reason)"' > truffles
       # ./mvnw -Dcheckstyle.skip -B -ntp -Dspring.main.banner-mode=off package
       # java -jar $SCANNER -Dsonar.projectKey=$sq_prj -Dsonar.host.url=$sq_url -Dsonar.pullrequest.key=$pr_key -Dsonar.pullrequest.branch=$pr_branch -Dsonar.pullrequest.base=$pr_base -Dsonar.qualitygate.wait=true -Dsonar.java.binaries=target/classes > sonar.log
   post_build:
