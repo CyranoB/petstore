@@ -7,10 +7,10 @@ phases:
     runtime-versions:
       java: corretto8
     commands:
-      - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.4.0.2170.zip
-      - unzip sonar-scanner-cli-4.4.0.2170.zip
-      - export SCANNER="sonar-scanner-4.4.0.2170/lib/sonar-scanner-cli-4.4.0.2170.jar"
-      - pip install 'truffleHog'   
+      #- wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.4.0.2170.zip
+      #- unzip -qq sonar-scanner-cli-4.4.0.2170.zip
+      #- export SCANNER="sonar-scanner-4.4.0.2170/lib/sonar-scanner-cli-4.4.0.2170.jar"
+      - pip3 -q install truffleHog git-remote-codecommit
   pre_build:
     commands:
       - export SONAR_TOKEN=$SONAR_TOKEN
@@ -19,12 +19,13 @@ phases:
       - export pr_key="$PULL_REQUEST_ID"
       - export pr_branch=$(echo $SOURCE_REFERENCE | grep -o '[^/]*$')
       - export pr_base=$(echo $DESTINATION_REFERENCE | grep -o '[^/]*$')
+      - echo $SOURCE_REFERENCE $pr_branch
       - git checkout $pr_branch
   build:
     commands:
-      - echo Verifying Pull Request $PULL_REQUEST_ID $pr_branch to be merge to $pr_base
+      - echo "Verifying Pull Request $PULL_REQUEST_ID $pr_branch to be merged to $pr_base"
       - unset MAVEN_CONFIG
-      - trufflehog --max_depth 10 --branch $pr_branch  --regex  --entropy=False --repo_path=. --json XXX | jq -r '"File \(.path) contains \(.reason)"' > truffles
+      - trufflehog --max_depth 10 --branch $pr_branch  --regex  --entropy=False --repo_path=. --json file:///. | jq -r '"File \(.path) contains \(.reason)"' > truffles
       # ./mvnw -Dcheckstyle.skip -B -ntp -Dspring.main.banner-mode=off package
       # java -jar $SCANNER -Dsonar.projectKey=$sq_prj -Dsonar.host.url=$sq_url -Dsonar.pullrequest.key=$pr_key -Dsonar.pullrequest.branch=$pr_branch -Dsonar.pullrequest.base=$pr_base -Dsonar.qualitygate.wait=true -Dsonar.java.binaries=target/classes > sonar.log
   post_build:
@@ -40,10 +41,9 @@ phases:
       #  fi
       #- aws codecommit post-comment-for-pull-request --pull-request-id $PULL_REQUEST_ID --repository-name $REPOSITORY_NAME --before-commit-id $DESTINATION_COMMIT --after-commit-id $SOURCE_COMMIT --content "$content"    
       - export truffles_nbr=$(cat truffles| sort | uniq  | wc -l)
-      - |
-      - if [ $truffles_nbr -ne "0" ]; then
-      -   content_passwd=$(echo "Found $truffles_nbr passwords in PR\n");
-      -   aws codecommit post-comment-for-pull-request --pull-request-id $PULL_REQUEST_ID --repository-name $REPOSITORY_NAME --before-commit-id $DESTINATION_COMMIT --after-commit-id $SOURCE_COMMIT --content "$content_passwd";
-      - fi
+      #- |
+      #  if [ $truffles_nbr != "0" ]; then
+      #    aws codecommit post-comment-for-pull-request --pull-request-id $PULL_REQUEST_ID --repository-name $REPOSITORY_NAME --before-commit-id $DESTINATION_COMMIT --after-commit-id $SOURCE_COMMIT --content "$content_passwd";
+      #  fi
       
 
