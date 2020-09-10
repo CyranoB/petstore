@@ -40,7 +40,7 @@ phases:
       #    aws codecommit update-pull-request-approval-state --pull-request-id $PULL_REQUEST_ID --approval-state APPROVE --revision-id $REVISION_ID;
       #  fi
       #- aws codecommit post-comment-for-pull-request --pull-request-id $PULL_REQUEST_ID --repository-name $REPOSITORY_NAME --before-commit-id $DESTINATION_COMMIT --after-commit-id $SOURCE_COMMIT --content "$content"    
-      - export truffles_nbr=$(cat truffles| sort | uniq  | wc -l)
+      # - export truffles_nbr=$(cat truffles| sort | uniq  | wc -l)
       #- |
       #  if [ $truffles_nbr != "0" ]; then
       #    aws codecommit post-comment-for-pull-request --pull-request-id $PULL_REQUEST_ID --repository-name $REPOSITORY_NAME --before-commit-id $DESTINATION_COMMIT --after-commit-id $SOURCE_COMMIT --content "$content_passwd";
