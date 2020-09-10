@@ -7,9 +7,9 @@ phases:
     runtime-versions:
       java: corretto8
     commands:
-      #- wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.4.0.2170.zip
-      #- unzip -qq sonar-scanner-cli-4.4.0.2170.zip
-      #- export SCANNER="sonar-scanner-4.4.0.2170/lib/sonar-scanner-cli-4.4.0.2170.jar"
+      - wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.4.0.2170.zip
+      - unzip -qq sonar-scanner-cli-4.4.0.2170.zip
+      - export SCANNER="sonar-scanner-4.4.0.2170/lib/sonar-scanner-cli-4.4.0.2170.jar"
       - pip3 -q install truffleHog git-remote-codecommit
   pre_build:
     commands:
@@ -25,9 +25,9 @@ phases:
   build:
     commands:
       - echo "Verifying Pull Request $PULL_REQUEST_ID $pr_branch to be merged to $pr_base"
-      #- unset MAVEN_CONFIG
-      #- ./mvnw -Dcheckstyle.skip -B -ntp -Dspring.main.banner-mode=off package
-      #- java -jar $SCANNER -Dsonar.projectKey=$sq_prj -Dsonar.host.url=$sq_url -Dsonar.pullrequest.key=$pr_key -Dsonar.pullrequest.branch=$pr_branch -Dsonar.pullrequest.base=$pr_base -Dsonar.qualitygate.wait=true -Dsonar.java.binaries=target/classes > sonar.log
+      - unset MAVEN_CONFIG
+      - ./mvnw -Dcheckstyle.skip -B -ntp -Dspring.main.banner-mode=off package
+      - java -jar $SCANNER -Dsonar.projectKey=$sq_prj -Dsonar.host.url=$sq_url -Dsonar.pullrequest.key=$pr_key -Dsonar.pullrequest.branch=$pr_branch -Dsonar.pullrequest.base=$pr_base -Dsonar.qualitygate.wait=true -Dsonar.java.binaries=target/classes > sonar.log
       - trufflehog --max_depth 100 --branch $pr_branch  --regex  --entropy=False --repo_path=. --json X | jq -r '"* File \(.path) contains \(.reason)"' > truffles      
   post_build:
     commands:
@@ -39,15 +39,15 @@ phases:
           aws codecommit post-comment-for-pull-request --pull-request-id $PULL_REQUEST_ID --repository-name $REPOSITORY_NAME --before-commit-id $DESTINATION_COMMIT --after-commit-id $SOURCE_COMMIT --content "$content_passwd";              
         fi   
 
-      #- export quality_status=$(cat sonar.log | grep "QUALITY GATE STATUS" | sed -E 's/.+STATUS\W ([A-Z]+).+/\1/g')
-      #- export sq_link=$(cat sonar.log | grep "QUALITY GATE STATUS")
-      #- |
-      #  if [ $quality_status = "FAILED" ]; then
-      #    content=$(echo "SonarQube Quality Gate Failed. $sq_link");
-      #  else
-      #    content=$(echo "SonarQube Quality Gate Passed. $sq_link");
-      #    aws codecommit update-pull-request-approval-state --pull-request-id $PULL_REQUEST_ID --approval-state APPROVE --revision-id $REVISION_ID;
-      #  fi
-      #- aws codecommit post-comment-for-pull-request --pull-request-id $PULL_REQUEST_ID --repository-name $REPOSITORY_NAME --before-commit-id $DESTINATION_COMMIT --after-commit-id $SOURCE_COMMIT --content "$content"    
+      - export quality_status=$(cat sonar.log | grep "QUALITY GATE STATUS" | sed -E 's/.+STATUS\W ([A-Z]+).+/\1/g')
+      - export sq_link=$(cat sonar.log | grep "QUALITY GATE STATUS")
+      - |
+        if [ $quality_status = "FAILED" ]; then
+          content=$(echo "SonarQube Quality Gate Failed. $sq_link");
+        else
+          content=$(echo "SonarQube Quality Gate Passed. $sq_link");
+          aws codecommit update-pull-request-approval-state --pull-request-id $PULL_REQUEST_ID --approval-state APPROVE --revision-id $REVISION_ID;
+        fi
+      - aws codecommit post-comment-for-pull-request --pull-request-id $PULL_REQUEST_ID --repository-name $REPOSITORY_NAME --before-commit-id $DESTINATION_COMMIT --after-commit-id $SOURCE_COMMIT --content "$content"    
       
 
