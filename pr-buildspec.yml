@@ -37,8 +37,11 @@ phases:
       - echo $truffles_nbr
       - |
         if [ $truffles_nbr != "0" ]; then
-          aws codecommit post-comment-for-pull-request --pull-request-id $PULL_REQUEST_ID --repository-name $REPOSITORY_NAME --before-commit-id $DESTINATION_COMMIT --after-commit-id $SOURCE_COMMIT --content "$content_passwd";
-        fi
+          export content_passwd="$(cat truffles)"
+          echo "$content_passwd";
+          aws codecommit post-comment-for-pull-request --pull-request-id $PULL_REQUEST_ID --repository-name $REPOSITORY_NAME --before-commit-id $DESTINATION_COMMIT --after-commit-id $SOURCE_COMMIT --content "$content_passwd";        
+        fi   
+      
       #- export quality_status=$(cat sonar.log | grep "QUALITY GATE STATUS" | sed -E 's/.+STATUS\W ([A-Z]+).+/\1/g')
       #- export sq_link=$(cat sonar.log | grep "QUALITY GATE STATUS")
       #- |
