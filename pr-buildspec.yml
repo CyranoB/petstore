@@ -39,6 +39,7 @@ phases:
           aws codecommit post-comment-for-pull-request --pull-request-id $PULL_REQUEST_ID --repository-name $REPOSITORY_NAME --before-commit-id $DESTINATION_COMMIT --after-commit-id $SOURCE_COMMIT --content "$content_passwd";              
         fi   
 
+      - cat sonar.log
       - export quality_status=$(cat sonar.log | grep "QUALITY GATE STATUS" | sed -E 's/.+STATUS\W ([A-Z]+).+/\1/g')
       - export sq_link=$(cat sonar.log | grep "QUALITY GATE STATUS")
       - |
