@@ -10,7 +10,7 @@ phases:
       #- wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.4.0.2170.zip
       #- unzip -qq sonar-scanner-cli-4.4.0.2170.zip
       #- export SCANNER="sonar-scanner-4.4.0.2170/lib/sonar-scanner-cli-4.4.0.2170.jar"
-      - pip3 -q install truffleHog git-remote-codecommit
+      - pip3 -q install truffleHog 
   pre_build:
     commands:
       - export SONAR_TOKEN=$SONAR_TOKEN
