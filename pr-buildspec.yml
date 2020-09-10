@@ -21,8 +21,6 @@ phases:
       - export pr_base=$(echo $DESTINATION_REFERENCE | grep -o '[^/]*$')
       - git config --local credential.helper "!aws codecommit credential-helper $@"
       - git config --local credential.UseHttpPath true
-      - git config -l --show-origin | grep credential
-      - GIT_TRACE=1 git fetch
       - git checkout $pr_branch
   build:
     commands:
@@ -30,7 +28,7 @@ phases:
       #- unset MAVEN_CONFIG
       #- ./mvnw -Dcheckstyle.skip -B -ntp -Dspring.main.banner-mode=off package
       #- java -jar $SCANNER -Dsonar.projectKey=$sq_prj -Dsonar.host.url=$sq_url -Dsonar.pullrequest.key=$pr_key -Dsonar.pullrequest.branch=$pr_branch -Dsonar.pullrequest.base=$pr_base -Dsonar.qualitygate.wait=true -Dsonar.java.binaries=target/classes > sonar.log
-      - trufflehog --max_depth 100 --branch $pr_branch  --regex  --entropy=False --repo_path=. --json X | jq -r '"File \(.path) contains \(.reason)"' > truffles      
+      - trufflehog --max_depth 100 --branch $pr_branch  --regex  --entropy=False --repo_path=. --json X | jq -r '"* File \(.path) contains \(.reason)"' > truffles      
   post_build:
     commands:
       - export truffles_nbr=$(cat truffles| sort | uniq  | wc -l)
@@ -38,10 +36,9 @@ phases:
       - |
         if [ $truffles_nbr != "0" ]; then
           export content_passwd="$(cat truffles)"
-          echo "$content_passwd";
-          aws codecommit post-comment-for-pull-request --pull-request-id $PULL_REQUEST_ID --repository-name $REPOSITORY_NAME --before-commit-id $DESTINATION_COMMIT --after-commit-id $SOURCE_COMMIT --content "$content_passwd";        
+          aws codecommit post-comment-for-pull-request --pull-request-id $PULL_REQUEST_ID --repository-name $REPOSITORY_NAME --before-commit-id $DESTINATION_COMMIT --after-commit-id $SOURCE_COMMIT --content "$content_passwd";              
         fi   
-      
+
       #- export quality_status=$(cat sonar.log | grep "QUALITY GATE STATUS" | sed -E 's/.+STATUS\W ([A-Z]+).+/\1/g')
       #- export sq_link=$(cat sonar.log | grep "QUALITY GATE STATUS")
       #- |
