@@ -19,9 +19,10 @@ phases:
       - export pr_key="$PULL_REQUEST_ID"
       - export pr_branch=$(echo $SOURCE_REFERENCE | grep -o '[^/]*$')
       - export pr_base=$(echo $DESTINATION_REFERENCE | grep -o '[^/]*$')
-      - git config --local credential.helper "!aws.cmd codecommit credential-helper $@"
+      - git config --local credential.helper "!aws codecommit credential-helper $@"
       - git config --local credential.UseHttpPath true
       - git config -l --show-origin | grep credential
+      - GIT_TRACE=1 git fetch
       - git checkout $pr_branch
   build:
     commands:
