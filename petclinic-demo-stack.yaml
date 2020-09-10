@@ -72,9 +72,7 @@ Resources:
                   - codebuild:UpdateReport
                   - codebuild:BatchPutTestCases
                   - codebuild:BatchPutCodeCoverages
-                Resource: 
-                  - !GetAtt AWSomePetClinicCoverageReportGroup.Arn
-                  - !GetAtt AWSomePetClinicDependencyCheckReportGroup.Arn
+                Resource: '*'
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
