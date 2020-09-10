@@ -40,8 +40,10 @@ phases:
         fi   
 
       - cat sonar.log
-      - export quality_status=$(cat sonar.log | grep "QUALITY GATE STATUS" | sed -E 's/.+STATUS\W ([A-Z]+).+/\1/g')
+      - export quality_status=$(cat sonar.log | grep "QUALITY GATE STATUS" | cut -d' ' -f5)
+      - echo $quality_status
       - export sq_link=$(cat sonar.log | grep "QUALITY GATE STATUS")
+      - echo $sq_link
       - |
         if [ $quality_status = "FAILED" ]; then
           content=$(echo "SonarQube Quality Gate Failed. $sq_link");
