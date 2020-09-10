@@ -19,7 +19,7 @@ phases:
       - export pr_key="$PULL_REQUEST_ID"
       - export pr_branch=$(echo $SOURCE_REFERENCE | grep -o '[^/]*$')
       - export pr_base=$(echo $DESTINATION_REFERENCE | grep -o '[^/]*$')
-      - git checkout $BRANCH
+      - git checkout $pr_branch
   build:
     commands:
       - echo Verifying Pull Request $PULL_REQUEST_ID $pr_branch to be merge to $pr_base
