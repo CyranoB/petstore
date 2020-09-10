@@ -9,7 +9,8 @@ phases:
     commands:
       - wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.4.0.2170.zip
       - unzip sonar-scanner-cli-4.4.0.2170.zip
-      - export SCANNER="sonar-scanner-4.4.0.2170/lib/sonar-scanner-cli-4.4.0.2170.jar"    
+      - export SCANNER="sonar-scanner-4.4.0.2170/lib/sonar-scanner-cli-4.4.0.2170.jar"
+      - pip install 'truffleHog'   
   pre_build:
     commands:
       - export SONAR_TOKEN=$SONAR_TOKEN
@@ -23,18 +24,26 @@ phases:
     commands:
       - echo Verifying Pull Request $PULL_REQUEST_ID started on `date`
       - unset MAVEN_CONFIG
-      - ./mvnw -Dcheckstyle.skip -B -ntp -Dspring.main.banner-mode=off package
-      - java -jar $SCANNER -Dsonar.projectKey=$sq_prj -Dsonar.host.url=$sq_url -Dsonar.pullrequest.key=$pr_key -Dsonar.pullrequest.branch=$pr_branch -Dsonar.pullrequest.base=$pr_base -Dsonar.qualitygate.wait=true -Dsonar.java.binaries=target/classes > sonar.log
+      - trufflehog --max_depth 10 --branch $BRANCH  --regex  --entropy=False --repo_path=. --json XXX | jq -r '"File \(.path) contains \(.reason)"' > truffles
+      # ./mvnw -Dcheckstyle.skip -B -ntp -Dspring.main.banner-mode=off package
+      # java -jar $SCANNER -Dsonar.projectKey=$sq_prj -Dsonar.host.url=$sq_url -Dsonar.pullrequest.key=$pr_key -Dsonar.pullrequest.branch=$pr_branch -Dsonar.pullrequest.base=$pr_base -Dsonar.qualitygate.wait=true -Dsonar.java.binaries=target/classes > sonar.log
   post_build:
     commands:
-      - cat sonar.log
-      - export quality_status=$(cat sonar.log | grep "QUALITY GATE STATUS" | sed -E 's/.+STATUS\W ([A-Z]+).+/\1/g')
-      - export sq_link=$($(cat sonar.log | grep "QUALITY GATE STATUS")
+      # export quality_status=$(cat sonar.log | grep "QUALITY GATE STATUS" | sed -E 's/.+STATUS\W ([A-Z]+).+/\1/g')
+      # export sq_link=$($(cat sonar.log | grep "QUALITY GATE STATUS")
+      # |
+      #  if [ $quality_status = "FAILED" ]; then
+      #    content=$(echo "SonarQube Quality Gate Failed. $sq_link");
+      #  else
+      #    content=$(echo "SonarQube Quality Gate Passed. $sq_link");
+      #    aws codecommit update-pull-request-approval-state --pull-request-id $PULL_REQUEST_ID --approval-state APPROVE --revision-id $REVISION_ID;
+      #  fi
+      #- aws codecommit post-comment-for-pull-request --pull-request-id $PULL_REQUEST_ID --repository-name $REPOSITORY_NAME --before-commit-id $DESTINATION_COMMIT --after-commit-id $SOURCE_COMMIT --content "$content"    
+      - export truffles_nbr=$(cat truffles| sort | uniq  | wc -l)
       - |
-        if [ $quality_status = "FAILED" ]; then
-          content=$(echo "SonarQube Quality Gate Failed. $sq_link");
-        else
-          content=$(echo "SonarQube Quality Gate Passed. $sq_link");
-          aws codecommit update-pull-request-approval-state --pull-request-id $PULL_REQUEST_ID --approval-state APPROVE --revision-id $REVISION_ID;
-        fi
-      - aws codecommit post-comment-for-pull-request --pull-request-id $PULL_REQUEST_ID --repository-name $REPOSITORY_NAME --before-commit-id $DESTINATION_COMMIT --after-commit-id $SOURCE_COMMIT --content "$content"    
+      - if [ $truffles_nbr -ne "0" ]; then
+      -   content_passwd=$(echo "Found $truffles_nbr passwords in PR\n");
+      -   aws codecommit post-comment-for-pull-request --pull-request-id $PULL_REQUEST_ID --repository-name $REPOSITORY_NAME --before-commit-id $DESTINATION_COMMIT --after-commit-id $SOURCE_COMMIT --content "$content_passwd";
+      - fi
+      
+
