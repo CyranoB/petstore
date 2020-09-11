@@ -162,11 +162,16 @@ Resources:
                   - codebuild:BatchGetBuilds
                   - codebuild:StartBuild
                 Resource: !GetAtt AWSomePetClinicCodeBuild.Arn
+              - Effect: Allow
+                Action:
+                  - iam:GetRole
+                  - iam:PassRole
+                Resource: '*'
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
           - Effect: Allow
-            Principal: { Service: codepipeline.amazonaws.com }
+            Principal: { Service: codepipeline.amazonaws.com,  }
             Action:
               - sts:AssumeRole
   AWSomePetClinicCodePipelineArtifactBucket:
@@ -274,6 +279,9 @@ Resources:
               InputArtifacts:
                 -
                   Name: SourceOutput
+              OutputArtifacts:
+                -
+                  Name: BuildOutput
               Name: BuildAction
               ActionTypeId:
                 Category: Build
@@ -284,6 +292,23 @@ Resources:
                 ProjectName: !Ref AWSomePetClinicCodeBuild
                 PrimarySource: SourceOutput
               RunOrder: 1
+        - Name: DeployTest
+          Actions:
+            - Name: Deploy
+              ActionTypeId:
+                  Category: Deploy
+                  Owner: AWS
+                  Provider: ECS
+                  Version: '1'
+              Configuration:
+                ClusterName: 'awsomepletclinic-stack-awsomecluster44878E37-z4VccgaLdP1Q'
+                ServiceName: 'awsomepletclinic-stack-awsomefgserviceService3C643573-1RQPDWC02KLG0'
+              InputArtifacts:
+                - Name: BuildOutput
+              RunOrder: 1
+
+
+
   
   AWSomePetClinicCoverageReportGroup:
     Type: AWS::CodeBuild::ReportGroup
