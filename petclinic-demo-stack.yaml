@@ -143,18 +143,10 @@ Resources:
                 Resource: !GetAtt AWSomePetClinicCodeCommit.Arn
               - Effect: Allow
                 Action:
+                  - sns:Publish
                   - cloudeploy:*
-                Resource: '*'
-              - Effect: Allow
-                Action:
                   - cloudwatch:*
-                Resource: '*'
-              - Effect: Allow
-                Action:
                   - s3:*
-                Resource: '*'
-              - Effect: Allow
-                Action:
                   - ecs:*
                 Resource: '*'
               - Effect: Allow
@@ -292,6 +284,17 @@ Resources:
                 ProjectName: !Ref AWSomePetClinicCodeBuild
                 PrimarySource: SourceOutput
               RunOrder: 1
+        - Name: ManualApproval
+          Actions:
+            - Name: Manual
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Version: 1
+                Provider: Manual
+              Configuration:
+                NotificationArn: arn:aws:sns:us-east-1:661904874735:DeploymentApprovalTopic
+
         - Name: DeployTest
           Actions:
             - Name: Deploy
