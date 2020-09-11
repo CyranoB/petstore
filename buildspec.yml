@@ -10,7 +10,7 @@ phases:
       java: corretto8
   pre_build:
     commands:
-      - export ecs_name = awsomepletclinic-stack-awsomecluster44878E37-z4VccgaLdP1Q
+      - export ecs_name=awsomepletclinic-stack-awsomecluster44878E37-z4VccgaLdP1Q
       - export SONAR_TOKEN=$SONAR_TOKEN
       - export sq_prj="awsomepetclinic"
       - export sq_url="http://ec2-3-81-189-216.compute-1.amazonaws.com:9000"
