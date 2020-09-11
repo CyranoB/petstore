@@ -18,6 +18,14 @@ Resources:
     Properties:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser
+        - arn:aws:iam::aws:policy/AmazonECS_FullAccess         
+        - arn:aws:iam::aws:policy/AWSCodeCommitFullAccess 
+        - arn:aws:iam::aws:policy/AWSLambdaFullAccess 
+        - arn:aws:iam::aws:policy/AWSCodeDeployFullAccess         
+        - arn:aws:iam::aws:policy/AWSCodePipelineFullAccess 
+        - arn:aws:iam::aws:policy/AWSCodeBuildAdminAccess 
+        - arn:aws:iam::aws:policy/CloudWatchEventsFullAccess 
+        - arn:aws:iam::aws:policy/AWSCodeDeployRoleForECS
       Policies:
         - PolicyName: AWSomePetClinicCodeBuildServiceRolePolicy
           PolicyDocument:
@@ -72,12 +80,48 @@ Resources:
                   - codebuild:UpdateReport
                   - codebuild:BatchPutTestCases
                   - codebuild:BatchPutCodeCoverages
+                  - ecs:DescribeServices
                 Resource: '*'
+        - PolicyName: DeployPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - autoscaling:*
+                  - codedeploy:*
+                  - ec2:*
+                  - lambda:*
+                  - ecs:*
+                  - elasticloadbalancing:*
+                  - iam:AddRoleToInstanceProfile
+                  - iam:CreateInstanceProfile
+                  - iam:CreateRole
+                  - iam:DeleteInstanceProfile
+                  - iam:DeleteRole
+                  - iam:DeleteRolePolicy
+                  - iam:GetInstanceProfile
+                  - iam:GetRole
+                  - iam:GetRolePolicy
+                  - iam:ListInstanceProfilesForRole
+                  - iam:ListRolePolicies
+                  - iam:ListRoles
+                  - iam:PassRole
+                  - iam:PutRolePolicy
+                  - iam:RemoveRoleFromInstanceProfile
+                  - s3:*
+                  - ssm:*
+                Resource: '*'
+
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
           - Effect: Allow
             Principal: { Service: codebuild.amazonaws.com }
+            Action:
+              - sts:AssumeRole
+          - Effect: Allow
+            Principal: { Service: codedeploy.amazonaws.com }
             Action:
               - sts:AssumeRole
   
@@ -99,11 +143,19 @@ Resources:
                 Resource: !GetAtt AWSomePetClinicCodeCommit.Arn
               - Effect: Allow
                 Action:
+                  - cloudeploy:*
+                Resource: '*'
+              - Effect: Allow
+                Action:
                   - cloudwatch:*
                 Resource: '*'
               - Effect: Allow
                 Action:
                   - s3:*
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - ecs:*
                 Resource: '*'
               - Effect: Allow
                 Action:
