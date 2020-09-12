@@ -8,7 +8,8 @@ sonarcloud-check:
     paths:
       - .sonar/cache
   script:
-    - ./mvnw -B -ntp verify sonar:sonar
+    - mvn verify sonar:sonar
   only:
     - merge_requests
     - master
+    - develop
