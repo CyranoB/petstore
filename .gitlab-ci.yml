@@ -8,7 +8,7 @@ sonarcloud-check:
     paths:
       - .sonar/cache
   script:
-    - mvn verify sonar:sonar
+    - mvn -D sonar.projectKey=awsomegroup1_petstore -D sonar.organization=awsomegroup verify sonar:sonar
   only:
     - merge_requests
     - master
