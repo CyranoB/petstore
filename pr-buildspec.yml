@@ -27,8 +27,8 @@ phases:
       - echo "Verifying Pull Request $PULL_REQUEST_ID $pr_branch to be merged to $pr_base"
       - unset MAVEN_CONFIG
       - ./mvnw -Dcheckstyle.skip -B -ntp -Dspring.main.banner-mode=off package
-      - java -jar $SCANNER -Dsonar.projectKey=$sq_prj -Dsonar.host.url=$sq_url -Dsonar.pullrequest.key=$pr_key -Dsonar.pullrequest.branch=$pr_branch -Dsonar.pullrequest.base=$pr_base -Dsonar.qualitygate.wait=true -Dsonar.java.binaries=target/classes > sonar.log 2>&1
       - trufflehog --max_depth 100 --branch $pr_branch  --regex  --entropy=False --repo_path=. --json X | jq -r '"* File \(.path) contains \(.reason)"' > truffles      
+      - java -jar $SCANNER -Dsonar.projectKey=$sq_prj -Dsonar.host.url=$sq_url -Dsonar.pullrequest.key=$pr_key -Dsonar.pullrequest.branch=$pr_branch -Dsonar.pullrequest.base=$pr_base -Dsonar.qualitygate.wait=true -Dsonar.java.binaries=target/classes > sonar.log 2>&1
   post_build:
     commands:
       - export truffles_nbr=$(cat truffles| sort | uniq  | wc -l)
@@ -38,7 +38,6 @@ phases:
           export content_passwd="$(cat truffles)"
           aws codecommit post-comment-for-pull-request --pull-request-id $PULL_REQUEST_ID --repository-name $REPOSITORY_NAME --before-commit-id $DESTINATION_COMMIT --after-commit-id $SOURCE_COMMIT --content "$content_passwd";              
         fi   
-
       - cat sonar.log
       - export quality_status=$(cat sonar.log | grep "QUALITY GATE STATUS" | cut -d' ' -f5)
       - echo "Quality Gate status $quality_status"
