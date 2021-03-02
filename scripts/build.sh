@@ -18,7 +18,7 @@ export sq_url=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/ur
 
 
 # Build Java App
-mvn -DskipTests=true package --no-transfer-progress 
+mvn -Dcheckstyle.skip -DskipTests=true package --no-transfer-progress 
 java -jar $SCANNER -Dsonar.projectKey=$sq_prj -Dsonar.host.url=$sq_url -Dsonar.qualitygate.wait=true -Dsonar.java.binaries=target/classes
 
 # Push container to ECR in shared services
