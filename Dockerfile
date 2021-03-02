@@ -1,6 +1,6 @@
 FROM openjdk:8-jdk-alpine
 
-COPY target/spring-petclinic-2.3.1.BUILD-SNAPSHOT.jar /petclinic.jar
+COPY target/spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar /petclinic.jar
 
 RUN apk add git
 RUN git clone https://github.com/aquasecurity/trivy-ci-test.git
