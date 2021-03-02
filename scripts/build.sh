@@ -10,11 +10,13 @@ SCANNER="sonar-scanner-4.6.0.2311/lib/sonar-scanner-cli-4.6.0.2311.jar"
 pip3 -q install truffleHog
 
 
-SONAR_TOKEN=$(aws secretsmanager get-secret-value --secret-id SONAR_TOKEN --query SecretString --output text)
+#SONAR_TOKEN=$(aws secretsmanager get-secret-value --secret-id SONAR_TOKEN --query SecretString --output text)
 
 sq_prj=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/project" --query Parameter.Value --output text)
 sq_org=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/org" --query Parameter.Value --output text)
 sq_url=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/url" --query Parameter.Value --output text)
+SONAR_TOKEN=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/token" --query Parameter.Value --output text --with-decryption)
+
 
 echo $sq_org
 
