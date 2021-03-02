@@ -6,15 +6,17 @@ set -o pipefail
 
 wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.0.2311.zip
 unzip -qq sonar-scanner-cli-4.6.0.2311.zip
-export SCANNER="sonar-scanner-4.6.0.2311/lib/sonar-scanner-cli-4.6.0.2311.jar"
+SCANNER="sonar-scanner-4.6.0.2311/lib/sonar-scanner-cli-4.6.0.2311.jar"
 pip3 -q install truffleHog
 
 
-export SONAR_TOKEN=$(aws secretsmanager get-secret-value --secret-id SONAR_TOKEN --query SecretString --output text)
+SONAR_TOKEN=$(aws secretsmanager get-secret-value --secret-id SONAR_TOKEN --query SecretString --output text)
 
-export sq_prj=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/project" --query Parameter.Value --output text)
-export sq_org=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/org" --query Parameter.Value --output text)
-export sq_url=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/url" --query Parameter.Value --output text)
+sq_prj=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/project" --query Parameter.Value --output text)
+sq_org=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/org" --query Parameter.Value --output text)
+sq_url=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/url" --query Parameter.Value --output text)
+
+echo $sq_org
 
 
 # Build Java App
