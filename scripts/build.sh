@@ -5,4 +5,4 @@
   set -o pipefail
 
   # Build Java App
-  mvn clean deploy --no-transfer-progress
+  mvn -DskipTests=true package --no-transfer-progress 
