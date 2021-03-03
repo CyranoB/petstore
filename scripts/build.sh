@@ -5,7 +5,7 @@ set -u
 set -o pipefail
 
 wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.0.2311.zip
-unzip -qq sonar-scanner-cli-4.6.0.2311.zip
+unzip -qq -f -o sonar-scanner-cli-4.6.0.2311.zip
 SCANNER="sonar-scanner-4.6.0.2311/lib/sonar-scanner-cli-4.6.0.2311.jar"
 pip3 -q install truffleHog
 
@@ -16,7 +16,6 @@ SONAR_TOKEN=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/toke
 sq_prj=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/project" --query Parameter.Value --output text)
 sq_org=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/org" --query Parameter.Value --output text)
 sq_url=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/url" --query Parameter.Value --output text)
-echo $sq_org
 
 # Build Java App
 mvn -Dcheckstyle.skip -DskipTests=true package --no-transfer-progress 
