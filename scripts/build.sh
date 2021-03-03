@@ -11,15 +11,12 @@ pip3 -q install truffleHog
 
 
 #SONAR_TOKEN=$(aws secretsmanager get-secret-value --secret-id SONAR_TOKEN --query SecretString --output text)
+SONAR_TOKEN=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/token" --query Parameter.Value --output text --with-decryption)
 
 sq_prj=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/project" --query Parameter.Value --output text)
 sq_org=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/org" --query Parameter.Value --output text)
 sq_url=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/url" --query Parameter.Value --output text)
-SONAR_TOKEN=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/token" --query Parameter.Value --output text --with-decryption)
-
-
 echo $sq_org
-
 
 # Build Java App
 mvn -Dcheckstyle.skip -DskipTests=true package --no-transfer-progress 
