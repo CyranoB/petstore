@@ -21,7 +21,7 @@ sq_url=$(aws ssm get-parameter --name "/warner/looney/roadrunner/sonar/url" --qu
 REPOSITORY_URI=$(aws ssm get-parameter --name "/warner/looney/roadrunner/repository_uri" --query Parameter.Value --output text)
 
 # Build Java App
-mvn -Dcheckstyle.skip --no-transfer-progress package  package org.owasp:dependency-check-maven:check
+mvn -Dcheckstyle.skip -Dlogging.level.org.springframework=OFF -Dlogging.level.root=OFF -Dspring.main.banner -mode=off --no-transfer-progress package package org.owasp:dependency-check-maven:check
 
 # SonarQube scan. Fails build on failed quality gate.
 java -jar $SCANNER -Dsonar.projectKey=$sq_prj -Dsonar.organization=$sq_org -Dsonar.host.url=$sq_url -Dsonar.qualitygate.wait=true -Dsonar.java.binaries=target/classes
