@@ -10,6 +10,7 @@ wget -q https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-sc
 unzip -qq sonar-scanner-cli-4.6.0.2311.zip
 SCANNER="sonar-scanner-4.6.0.2311/lib/sonar-scanner-cli-4.6.0.2311.jar"
 pip3 -q install truffleHog
+export DOCKER_BUILDKIT=1
 
 # Import prameters from SSM
 #SONAR_TOKEN=$(aws secretsmanager get-secret-value --secret-id SONAR_TOKEN --query SecretString --output text)
