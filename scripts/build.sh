@@ -22,7 +22,7 @@ mvn -Dcheckstyle.skip -DskipTests=true package --no-transfer-progress
 java -jar $SCANNER -Dsonar.projectKey=$sq_prj -Dsonar.organization=$sq_org -Dsonar.host.url=https://sonarcloud.io -Dsonar.qualitygate.wait=true -Dsonar.java.binaries=target/classes
 
 # Push container to ECR in shared services
-REPOSITORY_URI="615961246879.dkr.ecr.us-east-1.amazonaws.com/warner/looney/roadrunner"
+REPOSITORY_URI=$(aws ssm get-parameter --name "/warner/looney/roadrunner/repository_uri" --query Parameter.Value --output text)
 COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
 IMAGE_TAG=${COMMIT_HASH:=latest}
 
