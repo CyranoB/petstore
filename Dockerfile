@@ -1,4 +1,4 @@
-FROM openjdk:8-jdk-alpine
+FROM public.ecr.aws/n1q6t7z8/openjdk:latest
 
 COPY target/spring-petclinic-2.3.0.BUILD-SNAPSHOT.jar /petclinic.jar
 
