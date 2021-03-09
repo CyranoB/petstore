@@ -34,10 +34,11 @@ trivy --quiet filesystem  -f json -o findings.json --exit-code 0 --severity CRIT
 # Fails build on high and critical vulnerabilities
 trivy --quiet filesystem --exit-code 1 --severity HIGH,CRITICAL .dockerout
 
+
 # Push container to ECR in shared services
 COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
 IMAGE_TAG=${COMMIT_HASH:=latest}
-$(aws ecr get-login --region us-east-1 --no-include-email)
+$(aws ecr get-login --region $AWS_REGION --no-include-email)
 docker build -t $REPOSITORY_URI:latest .
 docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
 docker push $REPOSITORY_URI:latest
