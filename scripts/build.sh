@@ -30,7 +30,7 @@ java -jar $SCANNER -Dsonar.projectKey=$sq_prj -Dsonar.organization=$sq_org -Dson
 # Build locally
 docker build -o .dockerout .
 # Security scan local image to build report
-trivy --quiet filesystem  -f template --template "@sripts/trivy-junit.tpl" -o target/findings.xml --exit-code 0 --severity CRITICAL,HIGH,MEDIUM  .dockerout
+trivy --quiet filesystem  -f template --template "@scripts/trivy-junit.tpl" -o target/findings.xml --exit-code 0 --severity CRITICAL,HIGH,MEDIUM  .dockerout
 # Fails build on high and critical vulnerabilities
 trivy --quiet filesystem --exit-code 1 --severity HIGH,CRITICAL .dockerout
 
