@@ -29,7 +29,7 @@ export class AWSomePetClinicStack extends cdk.Stack {
     });
 
 
-    const ssmdbpassword = ssm.StringParameter.valueForSecureStringParameter(this, '/petstore/dbpassword', 1);
+    const ssmdbpassword = ssm.StringParameter.valueForSecureStringParameter(this, '/warner/looney/roadrunner/dbpassword', 1);
 
     const dbCluster = new rds.CfnDBCluster(this, "PetClinicDBCluster", {
       engine: 'aurora',
@@ -53,8 +53,8 @@ export class AWSomePetClinicStack extends cdk.Stack {
 
     console.log('JDBC: ' + dbUrl);
 
-    const ecrRepoArn = ssm.StringParameter.valueForStringParameter(this, '/petstore/ecr-repository-arn');
-    const ecrRepoName = ssm.StringParameter.valueForStringParameter(this, '/petstore/ecr-repository-name');
+    const ecrRepoArn = ssm.StringParameter.valueForStringParameter(this, '/warner/looney/roadrunner/repository_arn');
+    const ecrRepoName = ssm.StringParameter.valueForStringParameter(this, '/warner/looney/roadrunner/repository_name');
 
     const ecrRepo = ecr.Repository.fromRepositoryAttributes(this, 'ecrRepo', {
       repositoryArn: ecrRepoArn,
