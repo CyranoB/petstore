@@ -44,4 +44,4 @@ docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
 docker push $REPOSITORY_URI:latest
 docker push $REPOSITORY_URI:$IMAGE_TAG
 
-aws ssm put-parameter --name "/warner/looney/roadrunner/image_tag" --value $IMAGE_TAG --type "String"
+aws ssm put-parameter --name "/warner/looney/roadrunner/image_tag" --value $IMAGE_TAG --type "String" --overwrite
